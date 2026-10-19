@@ -1,16 +1,68 @@
-# React + Vite
+# Advanced React Hooks
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A practice project from the bootcamp for learning the advanced React hooks one by one. This README is updated as each hook is covered.
 
-Currently, two official plugins are available:
+## Hooks
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+| Hook | Status |
+| --- | --- |
+| `useCallback` | In progress |
+| `useMemo` | Not started |
+| `useRef` | Not started |
 
-## React Compiler
+## useCallback
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+`useCallback` caches a function between renders so React returns the same function until its dependencies change.
 
-## Expanding the ESLint configuration
+### The setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+`Parent` holds two pieces of state, `age` and `salary`, each with its own increment button:
+
+```
+Parent
+ ├─ Title
+ ├─ Count (Age)
+ ├─ Button (Increment Age)
+ ├─ Count (Salary)
+ └─ Button (Increment Salary)
+```
+
+Every component logs `Rendering ...` to the console, so you can see which components re-render.
+
+### The problem observed
+
+Clicking **Increment Age** re-renders every component, including `Title`, the Salary `Count` and the Salary `Button`, even though none of their data changed. This is because:
+
+- When state changes, `Parent` re-renders, and React re-renders all of its children by default.
+- The handlers (`incrementAge`, `incrementSalary`) are created again on every render, so each render gives children a new function.
+
+### Next steps
+
+- Wrap `Title`, `Count` and `Button` in `React.memo` so unchanged props skip re-rendering
+- Wrap the handlers in `useCallback` so `memo` isn't defeated by new function references
+- Compare the console logs before and after
+
+## Notes
+
+- Logs may appear twice in development when `<StrictMode>` is on. It is currently removed from `main.jsx` to keep the console readable.
+
+## Getting started
+
+```bash
+npm install
+npm run dev
+```
+
+The app runs at `http://localhost:5173`.
+
+## Project structure
+
+```
+src/
+  components/
+    Parent.jsx   # state and handlers
+    Title.jsx
+    Count.jsx
+    Button.jsx
+  App.jsx
+```
