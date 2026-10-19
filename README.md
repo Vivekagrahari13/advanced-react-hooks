@@ -6,7 +6,7 @@ A practice project from the bootcamp for learning the advanced React hooks one b
 
 | Hook | Status |
 | --- | --- |
-| `useCallback` | In progress |
+| `useCallback` | Done |
 | `useMemo` | Not started |
 | `useRef` | Not started |
 
@@ -36,11 +36,33 @@ Clicking **Increment Age** re-renders every component, including `Title`, the Sa
 - When state changes, `Parent` re-renders, and React re-renders all of its children by default.
 - The handlers (`incrementAge`, `incrementSalary`) are created again on every render, so each render gives children a new function.
 
-### Next steps
+### The fix
 
-- Wrap `Title`, `Count` and `Button` in `React.memo` so unchanged props skip re-rendering
-- Wrap the handlers in `useCallback` so `memo` isn't defeated by new function references
-- Compare the console logs before and after
+- Wrapped `Title`, `Count` and `Button` in `React.memo`, so each skips re-rendering when its props are the same as last time.
+- Wrapped `incrementAge` and `incrementSalary` in `useCallback`, so `Button` receives the same function between renders. Without this, `memo` is defeated because a new function counts as a changed prop.
+
+```jsx
+const incrementAge = useCallback(() => {
+  setAge(age + 1);
+}, [age]);
+```
+
+The dependency array lists the values the function reads. If `age` were left out, the function would keep using an old value (stale closure).
+
+### Result
+
+| Click | Re-renders | Skipped |
+| --- | --- | --- |
+| Increment Age | `Parent`, Age `Count`, Age `Button` | `Title`, Salary `Count`, Salary `Button` |
+| Increment Salary | `Parent`, Salary `Count`, Salary `Button` | `Title`, Age `Count`, Age `Button` |
+
+The button for the value that changed still re-renders, because its handler depends on that value and is recreated. Using the updater form, `setAge((a) => a + 1)` with an empty dependency array, keeps the function stable so the button never re-renders.
+
+### Key points
+
+- `React.memo` caches a component, `useCallback` caches a function, and `useMemo` caches a value.
+- `useCallback` alone does nothing unless the child is wrapped in `React.memo`.
+- Memoization has a cost, so use it where a re-render problem is real.
 
 ## Notes
 
